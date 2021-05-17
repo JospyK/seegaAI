@@ -11,6 +11,7 @@ class AI(Player):
 
     in_hand = 12
     score = 0
+    name="AI"
 
     def __init__(self, color):
         super(AI, self).__init__(color)
