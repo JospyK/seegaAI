@@ -43,24 +43,25 @@ class AI(Player):
         self.in_hand = 12
         self.score = 0
 
+    def best_position(self, state, actions):
+        pass
+
     def best_action(self, state, actions):
         import random
         choose = random.choice(actions)
-        # pprint(vars(state))
+        move = None
+        evaluation = 0
+        #pprint(self.minimax(state, 8, -math.inf, math.inf, True))
+        # move, evaluation = self.minimax(state, 8, -math.inf, math.inf, True)
+        return move
 
-        #move, evaluation = self.minimax(state, 8, -math.inf, math.inf, True)
-
-        return choose
-
-    
 
     def minimax(self, board, depth, alpha, beta, maximizing_player):
+        pass
 
-        # if depth == 0 or board.is_winner() or board.is_board_full():
+        #if depth == 0 or board.is_winner() or board.is_board_full():
         if depth == 0:
-            return None, evaluate(board)
-
-        #children = board.get_possible_moves(board)
+            return None, self.evaluate(board)
 
         children = SeegaRules.get_player_all_cases_actions(board, self.position)
         best_move = children[0]
@@ -69,7 +70,10 @@ class AI(Player):
             max_eval = -math.inf        
             for child in children:
                 board_copy = board
-                board_copy = SeegaRules.make_move(board_copy, child, self.position)
+                pprint(vars(board_copy))
+                pprint(board_copy)
+                board_copy, is_the_end = SeegaRules.make_move(board_copy, child, self.position)
+                pprint(board_copy)
                 current_eval = self.minimax(board_copy, depth - 1, alpha, beta, False)[1]
                 if current_eval > max_eval:
                     max_eval = current_eval
@@ -83,8 +87,8 @@ class AI(Player):
             min_eval = math.inf
             for child in children:
                 board_copy = board
-                board_copy = SeegaRules.make_move(board_copy, child, self.position)
-                current_eval = minimax(board_copy, depth - 1, alpha, beta, True)[1]
+                board_copy, is_the_end = SeegaRules.make_move(board_copy, child, self.position)
+                current_eval = self.minimax(board_copy, depth - 1, alpha, beta, True)[1]
                 if current_eval < min_eval:
                     min_eval = current_eval
                     best_move = child
@@ -93,7 +97,7 @@ class AI(Player):
                     break
             return best_move, min_eval
 
-    def evaluate(board):
+    def evaluate(self, board):
         if board.captured is not None:
             pprint('CAPTURED')
             return -1
