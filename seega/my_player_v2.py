@@ -1,9 +1,3 @@
-"""
-Created on 26 oct. 16:01 2020
-
-@author: HaroldKS
-"""
-
 from seega.seega_actions import SeegaAction, SeegaActionType
 from seega.seega_state import SeegaState
 from core import Player, action
@@ -11,6 +5,7 @@ from seega.seega_rules import SeegaRules
 import math
 from itertools import product
 from pprint import pp, pprint
+import copy
 
 
 class AI(Player):
@@ -47,6 +42,7 @@ class AI(Player):
         self.in_hand = 12
         self.score = 0
 
+    # Toute la partie 1 se gere ici ;) 
     def best_entry_position_v2(self, state):
         for i in range(4):
             for j in range(4):
@@ -58,15 +54,16 @@ class AI(Player):
                     return self.buildSeegaAction([(i, 4)])
                 if SeegaRules.is_legal_move(state, self.buildSeegaAction([(4, j)]), self.position):
                     return self.buildSeegaAction([(4, j)])
-
         return SeegaRules.random_play(state, self.position)
 
+    # creer une instance de l'objet SeegaAction.
+    # il prend en parametre un couple
+    # Pourrait etre utilisé dans plein de cas.
     def buildSeegaAction(self, couples):
         return SeegaAction(action_type=SeegaActionType.ADD, to=couples[0])
 
-
+    # Pour jouer notre meilleur coup quand ce sera notre tour
     def best_action(self, board):
-
         best_move = None
         best_move_score = 0
         availables_state = []
@@ -88,11 +85,10 @@ class AI(Player):
                 if score > best_move_score:
                     best_move = moves[i]
                     best_move_score = score
-
         return best_move
 
 
-
+    # implementation de alpha beta
     def minimax(self, board, alpha, beta, depth, actual_player):
 
         if depth == 0 or SeegaRules.is_end_game(board):

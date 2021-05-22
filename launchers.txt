@@ -1,0 +1,14 @@
+Les commandes pour lancer
+
+python main.py -ai0 seega/my_player_v2.py -ai1 seega/random_agent.py -s 0
+
+
+python main.py -ai0 seega/random_agent.py -ai1 seega/my_player_v2.py -s 0
+
+
+
+
+python main.py -ai0 seega/my_player_v2.py -ai1 seega/others/superai.py -s 0
+
+
+python main.py -ai0 seega/my_player_v2.py -ai1 seega/others/my_agent.py -s 0
