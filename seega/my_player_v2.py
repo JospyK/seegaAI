@@ -18,6 +18,7 @@ class AI(Player):
     in_hand = 12
     score = 0
     name= "Groupe2"
+    DEPTH=1
 
     def __init__(self, color):
         super(AI, self).__init__(color)
@@ -66,37 +67,35 @@ class AI(Player):
 
     def best_action(self, board):
 
-        bestMove = None
-        bestMoveScore = 0
-        possibleBoards = []
+        best_move = None
+        best_move_score = 0
+        availables_state = []
         moves = SeegaRules.get_player_all_cases_actions(board, self.position)
 
-        # Générer tous les state de ce noeud
+        # Générer tous les states de ce noeud
         for move in moves:
             newBoard = board
             newBoard, is_the_end = SeegaRules.make_move(newBoard, move, self.position)
-            possibleBoards.append(newBoard)
+            availables_state.append(newBoard)
 
-        bestMove = moves[0]
-        bestMoveScore = self.minimax(possibleBoards[0], float('-inf'), float('inf'), self.DEPTH, self.position)
+        best_move = moves[0]
+        best_move_score = self.minimax(availables_state[0], float('-inf'), float('inf'), self.DEPTH, self.position)
         i = -1
-        for aBoard in possibleBoards:
+        for stt in availables_state:
             i += 1
             if i > 1:
-                score = self.minimax(aBoard, float('-inf'), float('inf'), self.DEPTH, self.position)
-                if score > bestMoveScore:
-                    bestMove = moves[i]
-                    bestMoveScore = score
+                score = self.minimax(stt, float('-inf'), float('inf'), self.DEPTH, self.position)
+                if score > best_move_score:
+                    best_move = moves[i]
+                    best_move_score = score
 
-        w, x, y, z, color = bestMove
-
-        return w, x, y, z
+        return best_move
 
 
 
     def minimax(self, board, alpha, beta, depth, actual_player):
 
-        if depth == 0:
+        if depth == 0 or SeegaRules.is_end_game(board):
             return self.evaluate(board)
 
         if actual_player == self.position:
@@ -106,7 +105,7 @@ class AI(Player):
             for move in moves:
                 next_board = board
                 next_board, is_the_end = SeegaRules.make_move(next_board, move, self.position)
-                newBeta = min(newBeta, self.minimax(next_board, alpha, beta, depth-1, self.position))  
+                newBeta = min(newBeta, self.minimax(next_board, alpha, beta, depth - 1, self.position))  
                 if newBeta <= alpha:
                     break
             return newBeta
@@ -119,7 +118,6 @@ class AI(Player):
                 newAlpha = max(newAlpha, self.minimax(next_board, alpha, beta, depth - 1, self.position)) 
                 if beta <= newAlpha:
                     break
-
             return newAlpha
 
 

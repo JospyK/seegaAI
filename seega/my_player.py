@@ -124,7 +124,7 @@ class AI(Player):
         actions = SeegaRules.get_player_all_cases_actions(state, self.position)
         move = actions[0]
         evaluation = 0
-        move, evaluation = self.minimax(state, 20, -math.inf, math.inf, True)
+        move, evaluation = self.minimax(state, 8, -math.inf, math.inf, True)
         return move
 
 
