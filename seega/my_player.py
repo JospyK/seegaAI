@@ -10,7 +10,7 @@ from core import Player, action
 from seega.seega_rules import SeegaRules
 import math
 from itertools import product
-from pprint import pprint
+from pprint import pp, pprint
 
 
 class AI(Player):
@@ -28,7 +28,7 @@ class AI(Player):
         #print("time remain is ", remain_time, " seconds")
 
         if state.phase == 1 :
-            return self.best_entry_position(state)
+            return self.best_entry_position_v2(state)
         else: 
             return self.best_action(state)
                 
@@ -46,60 +46,75 @@ class AI(Player):
         self.in_hand = 12
         self.score = 0
 
+    def best_entry_position_v2(self, state):
+        for i in range(4):
+            for j in range(4):
+                if SeegaRules.is_legal_move(state, self.buildSeegaAction([(i, 0)]), self.position):
+                    return self.buildSeegaAction([(i, 0)])
+                if SeegaRules.is_legal_move(state, self.buildSeegaAction([(0, j)]), self.position):
+                    return self.buildSeegaAction([(0, j)])
+                if SeegaRules.is_legal_move(state, self.buildSeegaAction([(i, 4)]), self.position):
+                    return self.buildSeegaAction([(i, 4)])
+                if SeegaRules.is_legal_move(state, self.buildSeegaAction([(4, j)]), self.position):
+                    return self.buildSeegaAction([(4, j)])
 
-    def best_entry_position(self, state):
-        add = SeegaRules.random_play(state, self.position)
-        if state._latest_player == self.position:
-            pprint(self.place_near_edge(state))
-            my_previous_postion = state._latest_move.get('action').get('to')
-            possible_positions = self.neighbours(state, my_previous_postion)
-            if possible_positions:
-                #  prioriser les bords du tableau 
-                add = self.buildSeegaAction(possible_positions)
-            else:
-                # self.place_near_edge(state)
-                good_edges = self.place_near_edge(state)
-                if good_edges:
-                    add = self.buildSeegaAction(good_edges)
-                else:
-                    add = SeegaRules.random_play(state, self.position)     
-        else:
-            # it's muy turn to play. Nous allons chercher a serrer les cotés (de preference la ou a deja le plus de pion mais ce n'est obligatoire)
-            # sinon prioriser les bords du tableau 
-            add = SeegaRules.random_play(state, self.position)
+        return SeegaRules.random_play(state, self.position)
 
-        return add
+    # def best_entry_position(self, state):
+    #     add = SeegaRules.random_play(state, self.position)
+    #     if state._latest_player == self.position:
+    #         # pprint(self.place_near_edge(state))
+    #         my_previous_postion = state._latest_move.get('action').get('to')
+    #         possible_positions = self.neighbours(state, my_previous_postion)
+    #         if possible_positions:
+    #             #  prioriser les bords du tableau 
+    #             add = self.buildSeegaAction(possible_positions)
+    #             pprint(SeegaRules.is_legal_move(state, SeegaAction(action_type=SeegaActionType.ADD, to=possible_positions[0]), self.position))
+    #             pprint((1 , 2))
+    #             pprint(possible_positions[0])
+    #             pprint(add)
+    #         else:
+    #             # self.place_near_edge(state)
+    #             good_edges = self.place_near_edge(state)
+    #             if good_edges:
+    #                 add = self.buildSeegaAction(good_edges)
+    #             else:
+    #                 add = SeegaRules.random_play(state, self.position)     
+    #     else:
+    #         # it's muy turn to play. Nous allons chercher a serrer les cotés (de preference la ou a deja le plus de pion mais ce n'est obligatoire)
+    #         # sinon prioriser les bords du tableau 
+    #         add = SeegaRules.random_play(state, self.position)
 
+    #     return add
 
+    # def place_near_edge(self, state):
+    #     available_positions = SeegaRules.get_player_all_cases_actions(state, self.position)
+    #     available_positions_list = []
+    #     for x in available_positions:
+    #         available_positions_list.append(x.action.get('to'))
 
-    def place_near_edge(self, state):
-        available_positions = SeegaRules.get_player_all_cases_actions(state, self.position)
-        available_positions_list = []
-        for x in available_positions:
-            available_positions_list.append(x.action.get('to'))
+    #     return self.check_edges_first(available_positions_list)
 
-        return self.check_edges_first(available_positions_list)
-
-    def neighbours(self, state, t):
-        ranges = [(x-1, x, x+1) for x in t]
-        result = list(product(*ranges))
-        result.pop(len(result) // 2)
-        maList=[]
-        for x in result:
-            if not (x[0] < 0 or x[1] < 0) and x in state.get_board().get_all_empty_cells_without_center() : 
-                maList.append(x)
-        maList = sorted(maList, key=lambda tup: tup[0])
-        return self.check_edges_first(maList)
+    # # priorise les positions voisines dans le
+    # def neighbours(self, state, t):
+    #     ranges = [(x-1, x, x+1) for x in t]
+    #     result = list(product(*ranges))
+    #     result.pop(len(result) // 2)
+    #     maList=[]
+    #     for x in result:
+    #         if not (x[0] < 0 or x[1] < 0) and x in state.get_board().get_all_empty_cells_without_center() : 
+    #             maList.append(x)
+    #     maList = sorted(maList, key=lambda tup: tup[0])
+    #     return self.check_edges_first(maList)
  
-
-    # sort les places disponibles sur les bords du tableau || prioriser les bords du tableau
-    def check_edges_first(self, actions):
-        edges = {(0, 1), (0, 2), (0, 3), (0, 4), (1, 1), (1, 4), (2, 1), (2, 4), (3, 1), (3, 4), (4, 1), (4, 2), (4, 3), (4, 4)} 
-        good = list(set(edges).intersection(set(actions)))
-        if good is not None:
-            return good
-        else:
-            return actions
+    # # sort les places disponibles sur les bords du tableau || prioriser les bords du tableau
+    # def check_edges_first(self, actions):
+        # edges = {(0, 1), (0, 2), (0, 3), (0, 4), (1, 1), (1, 4), (2, 1), (2, 4), (3, 1), (3, 4), (4, 1), (4, 2), (4, 3), (4, 4)} 
+        # good = list(set(edges).intersection(set(actions)))
+        # if good is not None:
+        #     return good
+        # else:
+        #     return actions
 
     def buildSeegaAction(self, couples):
         return SeegaAction(action_type=SeegaActionType.ADD, to=couples[0])
@@ -154,20 +169,14 @@ class AI(Player):
                     break
             return best_move, min_eval
 
+
+# Return a number which indicates how good is the board for this IA
+    # We personnally do a simple difference between scores (but this is the method that must be improved, we think)
+
     def evaluate(self, board):
         import random
-        # return random.randrange(10)
-        # value = 24 - board.score[self.position]
-        if self.position == -1 :
-            return random.randrange(10)
-        else : 
-            return random.randrange(10)
-        #Kt = ((N ∗ N − 1)/2) − Mt(P1)
-        #return 24 - board.score[self.position]
+        #return random.randrange(10)
 
-
-
-        
-        # return  board.score[self.position] - board.score[self.position * -1]
+        return random.randrange(10) + board.score[self.position] - board.score[self.position * -1]
 
 
